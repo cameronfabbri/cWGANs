@@ -1,0 +1,15 @@
+*.pyc
+*.png
+checkpoint*
+checkpoint/*
+checkpoints/*
+*.log
+*.tex
+log*
+*.swp
+*.png
+*.jpg
+*.pkl
+output/*
+output*
+*.npy
