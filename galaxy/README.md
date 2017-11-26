@@ -1,0 +1,1 @@
+Applying ICGANs to galaxies
