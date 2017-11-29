@@ -40,7 +40,7 @@ if __name__ == '__main__':
    OUTPUT_DIR     = a.OUTPUT_DIR
    MAX_GEN        = a.MAX_GEN
 
-   BATCH_SIZE = 1
+   BATCH_SIZE = 64
 
    try: os.makedirs(OUTPUT_DIR)
    except: pass
@@ -95,6 +95,10 @@ if __name__ == '__main__':
       gen_imgs = sess.run([gen_images], feed_dict={z:batch_z, y:batch_y})[0]
 
       for img in gen_imgs:
+         img = (img+1.)
+         img *= 127.5
+         img = np.clip(img, 0, 255).astype(np.uint8)
+         img = np.reshape(img, (64, 64, -1))
          misc.imsave(OUTPUT_DIR+'image_0.png',img)
 
       # create random attributes for the rest of the batch
@@ -106,6 +110,10 @@ if __name__ == '__main__':
          print batch_y[0]
          gen_imgs = sess.run([gen_images], feed_dict={z:batch_z, y:batch_y})[0]
          for img in gen_imgs:
+            img = (img+1.)
+            img *= 127.5
+            img = np.clip(img, 0, 255).astype(np.uint8)
+            img = np.reshape(img, (64, 64, -1))
             misc.imsave(OUTPUT_DIR+'image_'+str(i+1)+'.png',img)
       
          batch_y = np.random.choice([0, 1], size=(BATCH_SIZE,9))
