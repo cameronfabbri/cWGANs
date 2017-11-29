@@ -88,9 +88,12 @@ if __name__ == '__main__':
    # the two z vectors to interpolate between
    two_z = np.random.normal(0, 1.0, size=[2, 100]).astype(np.float32)
 
-   # random attributes
-   batch_y = np.random.choice([0, 1], size=(BATCH_SIZE,9))
-   batch_y = np.zeros((BATCH_SIZE,9))
+   batch_y = np.random.choice([0, 1], size=(9))
+   batch_y[-3] = 1
+   batch_y = np.asarray([batch_y,]*BATCH_SIZE) # repeat same attribute for all images
+   print batch_y[0]
+   # put this in if not using any attributes
+   #batch_y = np.zeros((BATCH_SIZE,9))
 
    alpha = np.linspace(0,1, num=NUM)
    latent_vectors = []
