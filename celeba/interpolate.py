@@ -1,263 +1,125 @@
 '''
 
-   This is a testing file for generator.py. Here I'll be interpolating along
-   the attributes and seeing if it generates anything interesting. Need to
-   remember to also check the nearest neighbor in the training set just in
-   case it interpolates along attributes that were trained on.
+   This interpolates between two generated images
 
 '''
-
-import tensorflow.contrib.layers as tcl
 import matplotlib.pyplot as plt
-import cPickle as pickle
+from matplotlib.pyplot import cm
+import scipy.misc as misc
 import tensorflow as tf
+import tensorflow.contrib.layers as tcl
+import cPickle as pickle
+from tqdm import tqdm
 import numpy as np
-import requests
+import argparse
 import random
-import math
-import gzip
+import ntpath
+import time
+import sys
+import cv2
 import os
-from generator import *
-#from scipy import interpolate
 
-batch_size = 32
+sys.path.insert(0, '../ops/')
 
 from tf_ops import *
+import data_ops
+from nets import *
 
-def test(train_images, train_shapes, train_cont, test_images, test_shapes, test_cont):
-      
-   CHECKPOINT_DIR='checkpoints_generator/'
-
-   with tf.Graph().as_default():
-      global_step = tf.Variable(0, trainable=False, name='global_step')
-
-      # the true images
-      images = tf.placeholder(tf.float32, [batch_size, 64, 64, 1])
-
-      # discrete attributes
-      shape = tf.placeholder(tf.float32, [batch_size, 3]) # square, ellipse, or heart
-
-      # continuous attribute vector
-      c_attribute = tf.placeholder(tf.float32, [batch_size, 4], name='c_attribute')
-
-      # generate image from all attributes
-      gen_images = netG(shape, c_attribute)
-
-      # saver for the model
-      saver = tf.train.Saver(tf.all_variables())
-
-      init = tf.initialize_all_variables()
-      sess = tf.Session()
-      sess.run(init)
-
-      try: os.makedirs(CHECKPOINT_DIR+'interpolation_images/')
-      except: pass
-
-      ckpt = tf.train.get_checkpoint_state(CHECKPOINT_DIR)
-      if ckpt and ckpt.model_checkpoint_path:
-         try:
-            saver.restore(sess, ckpt.model_checkpoint_path)
-            print 'Model restored'
-         except:
-            print 'Could not restore model'
-            pass
-
-      step = int(sess.run(global_step))
-
-      num_train = len(train_images)
-      num_test  = len(test_images)
-
-      idx = np.random.choice(np.arange(num_test), batch_size, replace=False)
-      batch_images = test_images[idx]
-      batch_shape  = test_shapes[idx]
-      batch_cont   = test_cont[idx]
-
-      # save the original image first
-      gen_imgs = sess.run([gen_images],
-      feed_dict={images:batch_images,
-                 shape:batch_shape,
-                 c_attribute:batch_cont})[0]
-      for gen in gen_imgs:
-         gen = np.squeeze(gen)
-         plt.imsave(CHECKPOINT_DIR+'interpolation_images/original_gen.png', gen)
-         break
-
-      # [scale, orientation, x_pos, y_pos]
-      
-      ''' this is changing only the ORIENTATION
-      scales = batch_cont[0][0]
-      x_pos = batch_cont[0][-2]
-      y_pos = batch_cont[0][-1]
-      orien = np.linspace(0.0, 1.0, num=batch_size)
-      for i in range(len(batch_shape)):
-         batch_shape[i] = np.array([1,0,0]) # square
-         #batch_shape[i] = np.array([0,1,0]) # ellipse
-         #batch_shape[i] = np.array([0,0,1]) # heart
-         #batch_shape[i] = batch_shape[0] # original image shape
-         c = np.array([scales, orien[i], x_pos, y_pos])
-         batch_cont[i] = c
-      '''
-
-      ''' this is changing only the SCALE
-      scales = np.linspace(0.0, 1.0, num=batch_size)
-      x_pos = batch_cont[0][-2]
-      y_pos = batch_cont[0][-1]
-      orien = batch_cont[0][1]
-      for i in range(len(batch_shape)):
-         batch_shape[i] = np.array([1,0,0]) # square
-         #batch_shape[i] = np.array([0,1,0]) # ellipse
-         #batch_shape[i] = np.array([0,0,1]) # heart
-         c = np.array([scales[i], orien, x_pos, y_pos])
-         batch_cont[i] = c
-      '''
-
-      #''' this is changing only the X POS
-      scales = batch_cont[0][0]
-      x_pos = np.linspace(0.0, 1.0, num=batch_size)
-      y_pos = batch_cont[0][-1]
-      orien = batch_cont[0][1]
-      for i in range(len(batch_shape)):
-         batch_shape[i] = np.array([1,0,0]) # square
-         #batch_shape[i] = np.array([0,1,0]) # ellipse
-         #batch_shape[i] = np.array([0,0,1]) # heart
-         c = np.array([scales, orien, x_pos[i], y_pos])
-         batch_cont[i] = c
-      #'''
-
-      gen_imgs = sess.run([gen_images],
-      feed_dict={images:batch_images,
-                 shape:batch_shape,
-                 c_attribute:batch_cont})[0]
-
-      c = 0
-      for gen in gen_imgs:
-         gen = np.squeeze(gen)
-         plt.imsave(CHECKPOINT_DIR+'interpolation_images/'+str(step)+'_'+str(c)+'_gen.png', gen)
-         c += 1
-
-      exit()
-
-# TODO save out train/test arrays
-def main(argv=None):
-
-   # if previous train/test splits are made, load them
-   if os.path.isfile('data/train_images.npy'):
-      print 'Loading previous splits...'
-      train_images = np.load('data/train_images.npy')
-      test_images  = np.load('data/test_images.npy')
-      train_shapes = np.load('data/train_shapes.npy')
-      test_shapes  = np.load('data/test_shapes.npy')
-      train_cont   = np.load('data/train_cont.npy')
-      test_cont    = np.load('data/test_cont.npy')
-   else:
-
-      # dsprites numpy array
-      try: data = np.load('/mnt/data2/dsprites/dsprites_ndarray.npz')
-      except: data = np.load('data/dsprites_ndarray.npz')
-
-      # load images and attributes
-      images = data['imgs']
-      attributes = data['latents_values']
-
-      total_num = len(images)
-      print 'total:',total_num
-
-      # shuffle images and attributes together
-      c = list(zip(images, attributes))
-      random.shuffle(c)
-
-      # get images and attributes from shuffled c
-      images[:], attributes[:] = zip(*c)
-
-      # use 90% for training
-      num_train = int(0.9*total_num)
-
-      train_images_ = images[:num_train]
-      test_images_  = images[num_train:]
-
-      # define empty numpy arrays to load images in
-      train_images = np.empty((len(train_images_), 64, 64, 1), dtype=np.float32)
-      test_images  = np.empty((len(test_images_), 64, 64, 1), dtype=np.float32)
-
-      # reshape images from (64,64) -> (64,64,1)
-      i = 0
-      for img in train_images_:
-         img = img_norm(np.expand_dims(img, 2))
-         train_images[i, ...] = img
-         i += 1
-      i = 0
-      for img in test_images_:
-         img = img_norm(np.expand_dims(img, 2))
-         test_images[i, ...] = img
-         i += 1
-
-      num_test = len(test_images)
-      print 'num_train:',num_train
-      print 'num_test:',num_test
-
-      # split train and test attributes
-      train_attributes = attributes[:num_train]
-      test_attributes  = attributes[num_train:]
-
-      # discrete attributes are shape: square, ellipse, heart. So 3-dim one-hot vector
-      train_shapes = np.empty((num_train, 3), dtype=np.float32)
-
-      # 4 continuous attributes: scale, orientation, x_pos, y_pos
-      train_cont   = np.empty((num_train, 4), dtype=np.float32)
-
-      # same for testing
-      test_shapes = np.empty((num_test, 3), dtype=np.float32)
-      test_cont   = np.empty((num_test, 4), dtype=np.float32)
-
-      i = 0
-      for ta in train_attributes:
-         # get the shape number and put it in range [0,1,2]
-         shape_ta = int(ta[1]-1)
-         # create empty one-hot vector for the shape
-         s_ta = np.zeros(3)
-         # fill label
-         s_ta[shape_ta] = 1
-         # get continuous attributes and normalize them to range [0,1]
-         cont_ta = ta[2:]
-
-         scale       = normalize(cont_ta[0], 0.5, 1)
-         orientation = normalize(cont_ta[1], 0, 2*math.pi)
-         x_pos       = cont_ta[2] # these are already in [0,1] range
-         y_pos       = cont_ta[3]
-         
-         train_shapes[i, ...] = s_ta
-         train_cont[i, ...]   = np.asarray([scale, orientation, x_pos, y_pos])
-         i += 1
-
-      i = 0
-      for ta in test_attributes:
-         # get the shape number and put it in range [0,1,2]
-         shape_ta = int(ta[1]-1)
-         # create empty one-hot vector for the shape
-         s_ta = np.zeros(3)
-         # fill label
-         s_ta[shape_ta] = 1
-         # get continuous attributes and normalize them to range [0,1]
-         cont_ta = ta[2:]
-
-         scale       = normalize(cont_ta[0], 0.5, 1)
-         orientation = normalize(cont_ta[1], 0, 2*math.pi)
-         x_pos       = cont_ta[2] # these are already in [0,1] range
-         y_pos       = cont_ta[3]
-         
-         test_shapes[i, ...] = s_ta
-         test_cont[i, ...]   = np.asarray([scale, orientation, x_pos, y_pos])
-         i += 1
-
-      # save out numpy arrays
-      np.save('data/train_images.npy', train_images)
-      np.save('data/test_images.npy', test_images)
-      np.save('data/train_shapes.npy', train_shapes)
-      np.save('data/test_shapes.npy', test_shapes)
-      np.save('data/train_cont.npy', train_cont)
-      np.save('data/test_cont.npy', test_cont)
-
-   test(train_images, train_shapes, train_cont, test_images, test_shapes, test_cont)
 
 if __name__ == '__main__':
-   tf.app.run()
+
+   parser = argparse.ArgumentParser()
+   parser.add_argument('--CHECKPOINT_DIR', required=True,help='checkpoint directory',type=str)
+   parser.add_argument('--OUTPUT_DIR',     required=False,help='Directory to save data', type=str,default='./')
+   parser.add_argument('--NUM',            required=False,help='Maximum images to interpolate',  type=int,default=5)
+   a = parser.parse_args()
+
+   CHECKPOINT_DIR = a.CHECKPOINT_DIR
+   OUTPUT_DIR     = a.OUTPUT_DIR
+   NUM        = a.NUM
+
+   BATCH_SIZE = NUM
+
+   try: os.makedirs(OUTPUT_DIR)
+   except: pass
+
+   # placeholders for data going into the network
+   global_step = tf.Variable(0, name='global_step', trainable=False)
+   z           = tf.placeholder(tf.float32, shape=(BATCH_SIZE, 100), name='z')
+   y           = tf.placeholder(tf.float32, shape=(BATCH_SIZE, 9), name='y')
+
+   # generated images
+   gen_images = netG(z, y, BATCH_SIZE)
+   D_score = netD(gen_images, y, BATCH_SIZE, 'wgan')
+   
+   saver = tf.train.Saver(max_to_keep=1)
+   init = tf.group(tf.global_variables_initializer(), tf.local_variables_initializer())
+   sess  = tf.Session()
+   sess.run(init)
+   
+   # restore previous model if there is one
+   ckpt = tf.train.get_checkpoint_state(CHECKPOINT_DIR)
+   if ckpt and ckpt.model_checkpoint_path:
+      print "Restoring previous model..."
+      try:
+         saver.restore(sess, ckpt.model_checkpoint_path)
+         print "Model restored"
+      except:
+         print "Could not restore model"
+         raise
+         exit()
+   
+   #$print 'Loading data...'
+   #images, annots, test_images, test_annots = data_ops.load_celeba(DATA_DIR)
+
+   #test_images = images
+   #test_annots = annots
+
+   #test_len = len(test_annots)
+
+   step = 0
+
+   info_dict = {}
+
+   c = 0
+   print 'generating data...'
+   batch_z = np.random.normal(0, 1.0, size=[BATCH_SIZE, 100]).astype(np.float32)
+
+   # the two z vectors to interpolate between
+   two_z = np.random.normal(0, 1.0, size=[2, 100]).astype(np.float32)
+
+   # random attributes
+   batch_y = np.random.choice([0, 1], size=(BATCH_SIZE,9))
+   batch_y = np.zeros((BATCH_SIZE,9))
+
+   alpha = np.linspace(0,1, num=NUM)
+   latent_vectors = []
+   x1 = two_z[0]
+   x2 = two_z[1]
+
+   for a in alpha:
+      vector = x1*(1-a) + x2*a
+      latent_vectors.append(vector)
+
+   latent_vectors = np.asarray(latent_vectors)
+   #print latent_vectors
+
+   gen_imgs = sess.run([gen_images], feed_dict={z:latent_vectors, y:batch_y})[0]
+   i = 0
+   canvas = 255*np.ones((80, 64*(NUM+2), 3), dtype=np.uint8)
+
+   start_x = 10
+   start_y = 10
+   end_y = start_y+64
+
+   for img in gen_imgs:
+      
+      img = (img+1.)/2. # these two lines properly scale from [-1, 1] to [0, 255]
+      img *= 255.0/img.max()
+      end_x = start_x+64
+
+      canvas[start_y:end_y, start_x:end_x, :] = img
+      
+      start_x += 64+10
+
+   misc.imsave(OUTPUT_DIR+'canvas.png', canvas)
