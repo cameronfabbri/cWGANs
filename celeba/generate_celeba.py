@@ -31,18 +31,16 @@ if __name__ == '__main__':
    parser = argparse.ArgumentParser()
    parser.add_argument('--CHECKPOINT_DIR', required=True,help='checkpoint directory',type=str)
    parser.add_argument('--DATASET',        required=False,help='The DATASET to use',      type=str,default='celeba')
-   parser.add_argument('--DATA_DIR',       required=False,help='Directory where data is', type=str,default='./')
    parser.add_argument('--OUTPUT_DIR',     required=False,help='Directory to save data', type=str,default='./')
-   parser.add_argument('--MAX_GEN',        required=False,help='Maximum training steps',  type=int,default=100000)
+   parser.add_argument('--MAX_GEN',        required=False,help='Maximum images to generate',  type=int,default=5)
    a = parser.parse_args()
 
    CHECKPOINT_DIR = a.CHECKPOINT_DIR
    DATASET        = a.DATASET
    OUTPUT_DIR     = a.OUTPUT_DIR
    MAX_GEN        = a.MAX_GEN
-   DATA_DIR       = a.DATA_DIR
 
-   BATCH_SIZE = 64
+   BATCH_SIZE = 1
 
    try: os.makedirs(OUTPUT_DIR)
    except: pass
@@ -73,49 +71,46 @@ if __name__ == '__main__':
          raise
          exit()
    
-   print 'Loading data...'
-   images, annots, test_images, test_annots = data_ops.load_celeba(DATA_DIR)
+   #$print 'Loading data...'
+   #images, annots, test_images, test_annots = data_ops.load_celeba(DATA_DIR)
 
-   test_images = images
-   test_annots = annots
+   #test_images = images
+   #test_annots = annots
 
-   test_len = len(test_annots)
+   #test_len = len(test_annots)
 
    step = 0
 
-   '''
-      Save the image to a folder
-      write to a pickle file {image_name:label}
-   '''
    info_dict = {}
 
    c = 0
-   r = 0
    print 'generating data...'
-   #for step in tqdm(range(int(MAX_GEN/BATCH_SIZE))):
    while c < MAX_GEN:
-      idx     = np.random.choice(np.arange(test_len), BATCH_SIZE, replace=False)
       batch_z = np.random.normal(0, 1.0, size=[BATCH_SIZE, 100]).astype(np.float32)
-      batch_y = test_annots[idx]
 
+      # first generate an image with no attributes
+      batch_y = np.random.choice([0, 1], size=(BATCH_SIZE,9))
+      batch_y[0][:] = 0
+      batch_y[0][-3] = 1 # make male
       gen_imgs = sess.run([gen_images], feed_dict={z:batch_z, y:batch_y})[0]
-      # get score from the discriminator
-      dscores = sess.run([D_score], feed_dict={z:batch_z, y:batch_y})[0]
 
-      for im,y_,z_,score in zip(gen_imgs,batch_y,batch_z,dscores):
-         s = np.mean(score)
-         if s > -4.0:
-            image_name = OUTPUT_DIR+'img_'+str(c)+'.png'
-            info_dict[image_name] = [y_, z_]
-            misc.imsave(image_name, im)
-            c += 1
-         #else:
-         #   misc.imsave('rejects/reject_'+str(r)+'.png', im)
-         #   r += 1
+      for img in gen_imgs:
+         misc.imsave(OUTPUT_DIR+'image_0.png',img)
 
-   # write out dictionary to pickle file
-   p = open(OUTPUT_DIR+'data.pkl', 'wb')
-   data = pickle.dumps(info_dict)
-   p.write(data)
-   p.close()
-   exit()
+      # create random attributes for the rest of the batch
+      batch_y = np.random.choice([0, 1], size=(BATCH_SIZE,9))
+      batch_y[0][:] = 0
+      batch_y[0][-3] = 1 # make male
+      for i in range(9):
+         batch_y[0][i] = 1
+         print batch_y[0]
+         gen_imgs = sess.run([gen_images], feed_dict={z:batch_z, y:batch_y})[0]
+         for img in gen_imgs:
+            misc.imsave(OUTPUT_DIR+'image_'+str(i+1)+'.png',img)
+      
+         batch_y = np.random.choice([0, 1], size=(BATCH_SIZE,9))
+         batch_y[0][:] = 0
+         batch_y[0][-3] = 1 # make male
+         
+
+      exit()
