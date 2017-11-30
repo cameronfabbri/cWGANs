@@ -88,14 +88,14 @@ if __name__ == '__main__':
    # the two z vectors to interpolate between
    two_z = np.random.normal(0, 1.0, size=[2, 100]).astype(np.float32)
 
-   #two_z[0] = two_z[1]
+   two_z[0] = two_z[1]
 
    # interpolate between two random attributes as well
-   batch_y = np.random.choice([0, 1], size=(2, 9))
-   #batch_y = np.zeros((2,9))
-   #batch_y[0][-3] = 1
-   #batch_y[0][0] = 1
-   #batch_y[1][-3] = 1
+   #batch_y = np.random.choice([0, 1], size=(2, 9))
+   batch_y = np.zeros((2,9))
+   batch_y[0][-3] = 1
+   batch_y[0][0] = 1
+   batch_y[1][-3] = 1
    
    alpha = np.linspace(0,1, num=NUM)
    latent_vectors = []
