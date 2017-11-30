@@ -77,22 +77,28 @@ if __name__ == '__main__':
    # the two z vectors to interpolate between
    two_z = np.random.normal(-1.0, 1.0, size=[2, 100]).astype(np.float32)
 
-   batch_y = np.zeros((10))
-   batch_y[0] = 1
-   batch_y = np.asarray([batch_y,]*BATCH_SIZE) # repeat same attribute for all images
-
+   y1 = np.zeros((10))
+   y2 = np.zeros((10))
+   
+   y1[7] = 1
+   y2[8] = 1
+   
    alpha = np.linspace(0,1, num=NUM)
    latent_vectors = []
+   latent_y = []
    x1 = two_z[0]
    x2 = two_z[1]
 
    for a in alpha:
       vector = x1*(1-a) + x2*a
       latent_vectors.append(vector)
+      vy = y1*(1-a) + y2*a
+      latent_y.append(vy)
 
+   latent_y = np.asarray(latent_y)
    latent_vectors = np.asarray(latent_vectors)
 
-   gen_imgs = sess.run([gen_images], feed_dict={z:latent_vectors, y:batch_y})[0]
+   gen_imgs = sess.run([gen_images], feed_dict={z:latent_vectors, y:latent_y})[0]
    i = 0
    canvas = 255*np.ones((38, 300), dtype=np.uint8)
 
@@ -112,4 +118,3 @@ if __name__ == '__main__':
       start_x += 28+5
 
    plt.imsave(OUTPUT_DIR+'interpolate.png', np.squeeze(canvas), cmap=cm.gray)
-   #misc.imsave(OUTPUT_DIR+'interpolate.png', canvas)
