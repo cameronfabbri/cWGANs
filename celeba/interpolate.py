@@ -31,7 +31,7 @@ if __name__ == '__main__':
    parser = argparse.ArgumentParser()
    parser.add_argument('--CHECKPOINT_DIR', required=True,help='checkpoint directory',type=str)
    parser.add_argument('--OUTPUT_DIR',     required=False,help='Directory to save data', type=str,default='./')
-   parser.add_argument('--NUM',            required=False,help='Maximum images to interpolate',  type=int,default=5)
+   parser.add_argument('--NUM',            required=False,help='Maximum images to interpolate',  type=int,default=9)
    a = parser.parse_args()
 
    CHECKPOINT_DIR = a.CHECKPOINT_DIR
@@ -88,26 +88,30 @@ if __name__ == '__main__':
    # the two z vectors to interpolate between
    two_z = np.random.normal(0, 1.0, size=[2, 100]).astype(np.float32)
 
-   batch_y = np.random.choice([0, 1], size=(9))
-   batch_y[-3] = 1
-   batch_y = np.asarray([batch_y,]*BATCH_SIZE) # repeat same attribute for all images
-   print batch_y[0]
-   # put this in if not using any attributes
-   #batch_y = np.zeros((BATCH_SIZE,9))
-
+   # interpolate between two random attributes as well
+   batch_y = np.random.choice([0, 1], size=(2, 9))
+   
    alpha = np.linspace(0,1, num=NUM)
    latent_vectors = []
+   latent_y = []
+   y1 = batch_y[0]
+   y2 = batch_y[1]
    x1 = two_z[0]
    x2 = two_z[1]
+
+   print 'y1:',y1
+   print 'y2:',y2
 
    for a in alpha:
       vector = x1*(1-a) + x2*a
       latent_vectors.append(vector)
+      yv = y1*(1-a) + y2*a
+      latent_y.append(yv)
 
+   latent_y = np.asarray(latent_y)
    latent_vectors = np.asarray(latent_vectors)
-   #print latent_vectors
 
-   gen_imgs = sess.run([gen_images], feed_dict={z:latent_vectors, y:batch_y})[0]
+   gen_imgs = sess.run([gen_images], feed_dict={z:latent_vectors, y:latent_y})[0]
    i = 0
    canvas = 255*np.ones((80, 64*(NUM+2), 3), dtype=np.uint8)
 
