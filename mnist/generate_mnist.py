@@ -1,8 +1,6 @@
 '''
 
-   MNIST dataset generator.
-
-   This file generates mnist the latent z vectors and the corresponding images such that the encoder can be trained
+   Generates MNIST images for testing different y values
 
 '''
 import matplotlib.pyplot as plt
@@ -32,15 +30,13 @@ if __name__ == '__main__':
    parser.add_argument('--CHECKPOINT_DIR', required=True,help='checkpoint directory',type=str)
    parser.add_argument('--DATASET',        required=False,help='The DATASET to use',      type=str,default='mnist')
    parser.add_argument('--OUTPUT_DIR',     required=False,help='Directory where data is', type=str,default='./')
-   parser.add_argument('--MAX_GEN',        required=False,help='Maximum training steps',  type=int,default=100000)
    a = parser.parse_args()
 
    CHECKPOINT_DIR = a.CHECKPOINT_DIR
    DATASET        = a.DATASET
    OUTPUT_DIR     = a.OUTPUT_DIR+'/'
-   MAX_GEN        = a.MAX_GEN
 
-   BATCH_SIZE = 1
+   BATCH_SIZE = 64
 
    try: os.makedirs(OUTPUT_DIR)
    except: pass
@@ -72,38 +68,63 @@ if __name__ == '__main__':
          exit()
    
    print 'Loading data...'
-   images, annots = data_ops.load_mnist('./', mode='test')
+   #images, annots = data_ops.load_mnist('./', mode='test')
    test_images, test_annots = data_ops.load_mnist('./', mode='test')
 
    test_len = len(test_annots)
+   
+   n = 10 # cols
+   m = 3  # rows
+   num_images = n*m
+   img_size = (28, 28)
+   #canvas = 1*np.ones((m*img_size[0]+(10*m)+10, n*img_size[1]+(10*n)+10), dtype=np.uint8)
+   canvas = 255*np.ones((200, 400), dtype=np.uint8)
+   print canvas.shape
 
-   step = 0
+   start_x = 10
+   start_y = 10
+   x_ = 0
+   y_ = 0
 
-   latents = []
-   oimages = []
+   for j in range(5):
 
-   # stores the image name and true label
-   lf = open(OUTPUT_DIR+'labels.txt', 'a')
-
-   print 'generating data...'
-   #while step < MAX_GEN:
-   for step in tqdm(range(MAX_GEN)):
-      idx          = np.random.choice(np.arange(test_len), BATCH_SIZE, replace=False)
       batch_z = np.random.normal(-1.0, 1.0, size=[BATCH_SIZE, 100]).astype(np.float32)
-      batch_y      = annots[idx]
-      batch_images = images[idx]
-      gen_imgs = sess.run([gen_images], feed_dict={z:batch_z, y:batch_y, real_images:batch_images})[0][0]
+      batch_y = np.random.choice([0, 1], size=(BATCH_SIZE,10))
+      batch_y[0][:] = 0
 
-      num = np.argmax(batch_y[0])
-      #plt.imsave(OUTPUT_DIR+'image_'+str(step)+'.png', np.squeeze(gen_imgs), cmap=cm.gray)
+      # for the current style, go through all 10 labels
+      for i in range(10):
+         batch_y[0][i] = 1
+         print 'generating', np.argmax(batch_y[0])
 
-      latents.append(batch_z[0])
-      oimages.append(gen_imgs)
-      lf.write(str(num)+'\n')
-      step += 1
+         gen_imgs = sess.run([gen_images], feed_dict={z:batch_z, y:batch_y})[0]
+      
+         for img in gen_imgs:
+            img = (img+1.)/2. # these two lines properly scale from [-1, 1] to [0, 255]
+            img *= 255.0/img.max()
+            end_x = start_x+28
+            end_y = start_y+28
+            img = np.reshape(img, [28, 28])
+            canvas[start_y:end_y, start_x:end_x] = img
+            start_x += 28+10
+            break
+   
+         #plt.imsave(OUTPUT_DIR+'results.png', np.squeeze(canvas), cmap=cm.gray)
 
-   latents = np.asarray(latents)
-   oimages = np.asarray(oimages)
-   np.save(OUTPUT_DIR+'latents.npy', latents)
-   np.save(OUTPUT_DIR+'images.npy', oimages)
-   lf.close()
+         batch_y = np.random.choice([0, 1], size=(BATCH_SIZE,10))
+         batch_y[0][:] = 0
+
+      print
+      start_x = 10
+      start_y = end_y + 10
+   
+   plt.imsave(OUTPUT_DIR+'results.png', np.squeeze(canvas), cmap=cm.gray)
+   
+   exit()
+
+   num = np.argmax(batch_y[0])
+   #plt.imsave(OUTPUT_DIR+'image_'+str(step)+'.png', np.squeeze(gen_imgs), cmap=cm.gray)
+
+   latents.append(batch_z[0])
+   oimages.append(gen_imgs)
+   lf.write(str(num)+'\n')
