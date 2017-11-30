@@ -78,7 +78,7 @@ if __name__ == '__main__':
    num_images = n*m
    img_size = (28, 28)
    #canvas = 1*np.ones((m*img_size[0]+(10*m)+10, n*img_size[1]+(10*n)+10), dtype=np.uint8)
-   canvas = 255*np.ones((200, 400), dtype=np.uint8)
+   canvas = 255*np.ones((200, 390), dtype=np.uint8)
    print canvas.shape
 
    start_x = 10

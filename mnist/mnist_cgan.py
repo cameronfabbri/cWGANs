@@ -27,7 +27,7 @@ if __name__ == '__main__':
    parser.add_argument('--LOSS',       required=False,help='Type of GAN loss to use', type=str,default='wgan')
    parser.add_argument('--DATASET',    required=False,help='The DATASET to use',      type=str,default='mnist')
    parser.add_argument('--DATA_DIR',   required=False,help='Directory where data is', type=str,default='./')
-   parser.add_argument('--EPOCHS',     required=False,help='Maximum training steps',  type=int,default=25)
+   parser.add_argument('--EPOCHS',     required=False,help='Maximum training steps',  type=int,default=100)
    parser.add_argument('--BATCH_SIZE', required=False,help='Batch size',              type=int,default=64)
    a = parser.parse_args()
 
@@ -55,12 +55,13 @@ if __name__ == '__main__':
 
    # get the output from D on the real and fake data
    errD_real = netD(real_images, y, BATCH_SIZE)
-   errD_fake1 = 0.5*netD(gen_images, y, BATCH_SIZE, reuse=True)
+   #errD_fake1 = 0.5*netD(gen_images, y, BATCH_SIZE, reuse=True)
 
    # matching aware discriminator - send real images in with fake labels and mark as fake
    #if LOSS != 'wgan': errD_fake += netD(real_images, fy, BATCH_SIZE, reuse=True)
-   errD_fake2 = 0.5*netD(real_images, fy, BATCH_SIZE, reuse=True)
-   errD_fake = errD_fake1 + errD_fake2
+   #errD_fake2 = 0.5*netD(real_images, fy, BATCH_SIZE, reuse=True)
+   #errD_fake = errD_fake1 + errD_fake2
+   errD_fake = netD(gen_images, y, BATCH_SIZE, reuse=True)
 
    e = 1e-12
    if LOSS == 'gan':
@@ -103,7 +104,7 @@ if __name__ == '__main__':
       n_critic = 5
       beta1    = 0.0
       beta2    = 0.9
-      lr       = 1e-5
+      lr       = 1e-4
 
    if LOSS == 'lsgan':
       n_critic = 1
