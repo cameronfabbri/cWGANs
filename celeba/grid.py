@@ -95,13 +95,13 @@ if __name__ == '__main__':
 
    c = 0
    print 'generating data...'
-   batch_z = np.random.normal(0.0, 1.0, size=[BATCH_SIZE, 100]).astype(np.float32)
+   batch_z = np.random.normal(-1.0, 1.0, size=[BATCH_SIZE, 100]).astype(np.float32)
 
    # contains rows of images
    gen_imgs = []
 
    # the four z vectors to interpolate between
-   f_z = np.random.normal(0.0, 1.0, size=[4, 100]).astype(np.float32)
+   f_z = np.random.normal(-1.0, 1.0, size=[4, 100]).astype(np.float32)
 
    y1 = np.zeros((9))
    y2 = np.zeros((9))
