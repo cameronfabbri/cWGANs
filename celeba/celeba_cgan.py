@@ -197,7 +197,7 @@ if __name__ == '__main__':
       
       # now train the generator once! use normal distribution, not uniform!!
       idx          = np.random.choice(np.arange(train_len), BATCH_SIZE, replace=False)
-      batch_z      = np.random.normal(0.0, 1.0, size=[BATCH_SIZE, 100]).astype(np.float32)
+      batch_z      = np.random.normal(-1.0, 1.0, size=[BATCH_SIZE, 100]).astype(np.float32)
       batch_y      = annots[idx]
       batch_img    = images[idx]
       batch_images = np.empty((BATCH_SIZE, 64, 64, 3), dtype=np.float32)
@@ -230,7 +230,7 @@ if __name__ == '__main__':
          saver.export_meta_graph(CHECKPOINT_DIR+'checkpoint-'+str(step)+'.meta')
 
          idx          = np.random.choice(np.arange(test_len), BATCH_SIZE, replace=False)
-         batch_z      = np.random.normal(0.0, 1.0, size=[BATCH_SIZE, 100]).astype(np.float32)
+         batch_z      = np.random.normal(-1.0, 1.0, size=[BATCH_SIZE, 100]).astype(np.float32)
          batch_y      = test_annots[idx]
          batch_img    = test_images[idx]
          batch_images = np.empty((BATCH_SIZE, 64, 64, 3), dtype=np.float32)
