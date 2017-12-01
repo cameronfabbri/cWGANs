@@ -31,7 +31,7 @@ if __name__ == '__main__':
    parser = argparse.ArgumentParser()
    parser.add_argument('--CHECKPOINT_DIR', required=True,help='checkpoint directory',type=str)
    parser.add_argument('--OUTPUT_DIR',     required=False,help='Directory to save data', type=str,default='./')
-   parser.add_argument('--NUM',            required=False,help='Maximum images to interpolate',  type=int,default=5)
+   parser.add_argument('--NUM',            required=False,help='Maximum images to interpolate',  type=int,default=9)
    a = parser.parse_args()
 
    CHECKPOINT_DIR = a.CHECKPOINT_DIR
@@ -80,8 +80,8 @@ if __name__ == '__main__':
    y1 = np.zeros((10))
    y2 = np.zeros((10))
    
-   y1[7] = 1
-   y2[8] = 1
+   y1[2] = 1
+   y2[6] = 1
    
    alpha = np.linspace(0,1, num=NUM)
    latent_vectors = []
