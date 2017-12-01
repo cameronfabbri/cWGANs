@@ -25,6 +25,29 @@ from tf_ops import *
 import data_ops
 from nets import *
 
+def getCanvas(canvas, gen_imgs, start_x, start_y):
+   end_y = start_y+28
+   for img in gen_imgs:
+      img = (img+1.)/2. # these two lines properly scale from [-1, 1] to [0, 255]
+      img *= 255.0/img.max()
+      end_x = start_x+28
+      img = np.reshape(img, [28, 28])
+      canvas[start_y:end_y, start_x:end_x] = img
+      start_x += 28+5
+   return canvas
+
+def interp(x1, x2, y1, y2):
+   alpha = np.linspace(0,1, num=NUM)
+   latent_vectors = []
+   latent_y = []
+   for a in alpha:
+      vector = x1*(1-a) + x2*a
+      latent_vectors.append(vector)
+      vy = y1*(1-a) + y2*a
+      latent_y.append(vy)
+   latent_y = np.asarray(latent_y)
+   latent_vectors = np.asarray(latent_vectors)
+   return latent_vectors, latent_y
 
 if __name__ == '__main__':
 
@@ -74,6 +97,9 @@ if __name__ == '__main__':
    print 'generating data...'
    batch_z = np.random.normal(-1.0, 1.0, size=[BATCH_SIZE, 100]).astype(np.float32)
 
+   # contains rows of images
+   gen_imgs = []
+
    # the four z vectors to interpolate between
    f_z = np.random.normal(-1.0, 1.0, size=[4, 100]).astype(np.float32)
 
@@ -93,45 +119,37 @@ if __name__ == '__main__':
    z3 = f_z[1]
    z4 = f_z[1]
 
-   # first generate the first column - z1 to z3
-   alpha = np.linspace(0,1, num=NUM)
-   latent_vectors = []
-   latent_y = []
-
-   for a in alpha:
-      vector = z1*(1-a) + z3*a
-      latent_vectors.append(vector)
-      vy = y1*(1-a) + y3*a
-      latent_y.append(vy)
-   latent_y = np.asarray(latent_y)
-   latent_vectors = np.asarray(latent_vectors)
+   # column 1
+   latent_vectors1, latent_y1 = interp(z1, z3, y1, y3)
+   gen_imgs1 = sess.run([gen_images], feed_dict={z:latent_vectors1, y:latent_y1})[0]
+   #gen_imgs.append(gen_imgs1)
    
-   gen_imgs1 = sess.run([gen_images], feed_dict={z:latent_vectors, y:latent_y})[0]
+   # column 2
+   latent_vectors2, latent_y2 = interp(z2, z4, y2, y4)
+   gen_imgs2 = sess.run([gen_images], feed_dict={z:latent_vectors2, y:latent_y2})[0]
+   #gen_imgs.append(gen_imgs2)
 
-   # generate last column - z2 to z4
-   latent_vectors = []
-   latent_y = []
+   # now interpolate between each row from each column
+   for i in range(NUM):
+      # left column z
+      _z1 = latent_vectors1[i]
+      # right column z
+      _z2 = latent_vectors2[i]
 
-   for a in alpha:
-      vector = z2*(1-a) + z4*a
-      latent_vectors.append(vector)
-      vy = y2*(1-a) + y4*a
-      latent_y.append(vy)
-   latent_y = np.asarray(latent_y)
-   latent_vectors = np.asarray(latent_vectors)
+      _y1 = latent_y1[i]
+      _y2 = latent_y2[i]
+      
+      latent_vectors, latent_y = interp(_z1, _z2, _y1, _y2)
+      gimgs = sess.run([gen_images], feed_dict={z:latent_vectors, y:latent_y})[0]
+      gen_imgs.append(gimgs)
 
-   gen_imgs2 = sess.run([gen_images], feed_dict={z:latent_vectors, y:latent_y})[0]
 
-   canvas = 255*np.ones((38, 300), dtype=np.uint8)
+   canvas = 255*np.ones((NUM*NUM, NUM*NUM), dtype=np.uint8)
    start_x = 5
    start_y = 5
-   end_y = start_y+28
+   for img in gen_imgs:
+      canvas = getCanvas(canvas, img, start_x, start_y)
+      start_y += 28+5 # new row
 
-   for img in gen_imgs1:
-      img = (img+1.)/2. # these two lines properly scale from [-1, 1] to [0, 255]
-      img *= 255.0/img.max()
-      end_x = start_x+28
-      img = np.reshape(img, [28, 28])
-      canvas[start_y:end_y, start_x:end_x] = img
-      start_x += 28+5
+
    plt.imsave(OUTPUT_DIR+'interpolate.png', np.squeeze(canvas), cmap=cm.gray)
