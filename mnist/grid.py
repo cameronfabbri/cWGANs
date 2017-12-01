@@ -108,10 +108,10 @@ if __name__ == '__main__':
    y3 = np.zeros((10))
    y4 = np.zeros((10))
    
-   y1[1] = 1
-   y2[2] = 1
-   y3[3] = 1
-   y4[4] = 1
+   y1[0] = 1
+   y2[4] = 1
+   y3[6] = 1
+   y4[2] = 1
    
    # four corners
    z1 = f_z[0]
@@ -144,7 +144,7 @@ if __name__ == '__main__':
       gen_imgs.append(gimgs)
 
 
-   canvas = 255*np.ones((NUM*NUM, NUM*NUM), dtype=np.uint8)
+   canvas = 255*np.ones(( (NUM*5)+(NUM*28)+4, (NUM*5)+(NUM*28)+4 ), dtype=np.uint8)
    start_x = 5
    start_y = 5
    for img in gen_imgs:
