@@ -30,3 +30,15 @@ This shows interpolation between four faces (four corners)
 ![i4](https://i.imgur.com/q13bJL3.png)
 
 
+
+### How to run
+1. Download the cropped and aligned celebA dataset from [here](http://mmlab.ie.cuhk.edu.hk/projects/CelebA.html)
+as well as the annotations.
+
+2. Your folder layout must be like so:
+```
+root_celeba/
+   img_align_celeba/
+   img_align_celeba_cropped/
+   list_attr_celeba.txt
+```
