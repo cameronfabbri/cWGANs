@@ -25,8 +25,8 @@ if __name__ == '__main__':
 
    parser = argparse.ArgumentParser()
    parser.add_argument('--LOSS',       required=False,help='Type of GAN loss to use', type=str,default='wgan')
-   parser.add_argument('--DATASET',    required=False,help='The DATASET to use',      type=str,default='mnist')
-   parser.add_argument('--DATA_DIR',   required=False,help='Directory where data is', type=str,default='./')
+   parser.add_argument('--DATASET',    required=False,help='The DATASET to use',      type=str,default='fashion')
+   parser.add_argument('--DATA_DIR',   required=False,help='Directory where data is', type=str,default='data/')
    parser.add_argument('--EPOCHS',     required=False,help='Maximum training steps',  type=int,default=100)
    parser.add_argument('--BATCH_SIZE', required=False,help='Batch size',              type=int,default=64)
    a = parser.parse_args()
@@ -55,12 +55,6 @@ if __name__ == '__main__':
 
    # get the output from D on the real and fake data
    errD_real = netD(real_images, y, BATCH_SIZE)
-   #errD_fake1 = 0.5*netD(gen_images, y, BATCH_SIZE, reuse=True)
-
-   # matching aware discriminator - send real images in with fake labels and mark as fake
-   #if LOSS != 'wgan': errD_fake += netD(real_images, fy, BATCH_SIZE, reuse=True)
-   #errD_fake2 = 0.5*netD(real_images, fy, BATCH_SIZE, reuse=True)
-   #errD_fake = errD_fake1 + errD_fake2
    errD_fake = netD(gen_images, y, BATCH_SIZE, reuse=True)
 
    e = 1e-12
@@ -156,8 +150,7 @@ if __name__ == '__main__':
    step = sess.run(global_step)
 
    print 'Loading data...'
-   images, annots = data_ops.load_mnist(DATA_DIR)
-   test_images, test_annots = data_ops.load_mnist(DATA_DIR, mode='test')
+   images, annots, test_images, test_annots = data_ops.load_fashion(DATA_DIR)
 
    train_len = len(annots)
    test_len  = len(test_annots)
@@ -179,17 +172,7 @@ if __name__ == '__main__':
          batch_y      = annots[idx]
          batch_images = images[idx]
 
-         # create wrong labels
-         batch_fy = []
-         for lab in batch_y:
-            l = np.zeros((10))
-            r = random.randint(0,9)
-            while r == np.argmax(lab):
-               r = random.randint(0,9)
-            l[r] = 1
-            batch_fy.append(l)
-         batch_fy = np.asarray(batch_fy)
-         sess.run(D_train_op, feed_dict={z:batch_z, y:batch_y, fy:batch_fy, real_images:batch_images})
+         sess.run(D_train_op, feed_dict={z:batch_z, y:batch_y, real_images:batch_images})
       
       # now train the generator once! use normal distribution, not uniform!!
       idx          = np.random.choice(np.arange(train_len), BATCH_SIZE, replace=False)
@@ -197,22 +180,10 @@ if __name__ == '__main__':
       batch_y      = annots[idx]
       batch_images = images[idx]
 
-      # create wrong labels
-      batch_fy = []
-      for lab in batch_y:
-         l = np.zeros((10))
-         r = random.randint(0,9)
-         while r == np.argmax(lab):
-            r = random.randint(0,9)
-         l[r] = 1
-         batch_fy.append(l)
-      batch_fy = np.asarray(batch_fy)
-
-      sess.run(G_train_op, feed_dict={z:batch_z, y:batch_y, fy: batch_fy, real_images:batch_images})
-      sess.run(G_train_op, feed_dict={z:batch_z, y:batch_y, fy: batch_fy, real_images:batch_images})
+      sess.run(G_train_op, feed_dict={z:batch_z, y:batch_y, real_images:batch_images})
 
       # now get all losses and summary *without* performing a training step - for tensorboard and printing
-      D_loss, G_loss, summary = sess.run([errD, errG, merged_summary_op], feed_dict={z:batch_z, fy:batch_fy, y:batch_y, real_images:batch_images})
+      D_loss, G_loss, summary = sess.run([errD, errG, merged_summary_op], feed_dict={z:batch_z, y:batch_y, real_images:batch_images})
       summary_writer.add_summary(summary, step)
 
       print 'epoch:',epoch_num,'step:',step,'D loss:',D_loss,'G_loss:',G_loss,'time:',time.time()-start
