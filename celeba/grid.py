@@ -151,7 +151,6 @@ if __name__ == '__main__':
       gimgs = sess.run([gen_images], feed_dict={z:latent_vectors, y:latent_y})[0]
       gen_imgs.append(gimgs)
 
-
    canvas = 255*np.ones(( (NUM*5)+(NUM*64)+4, (NUM*5)+(NUM*64)+4, 3 ), dtype=np.uint8)
    start_x = 5
    start_y = 5

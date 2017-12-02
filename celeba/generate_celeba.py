@@ -94,13 +94,19 @@ if __name__ == '__main__':
       batch_y[0][-3] = 1 # make male
       gen_imgs = sess.run([gen_images], feed_dict={z:batch_z, y:batch_y})[0]
 
+      canvas = 255*np.ones(( 80, (9*5)+(9*64)+4, 3 ), dtype=np.uint8)
       for img in gen_imgs:
          img = (img+1.)
          img *= 127.5
          img = np.clip(img, 0, 255).astype(np.uint8)
          img = np.reshape(img, (64, 64, -1))
-         misc.imsave(OUTPUT_DIR+'image_0.png',img)
+         #misc.imsave(OUTPUT_DIR+'image_0.png',img)
+         canvas[start_y:end_y, start_x:end_x, :] = img
 
+      misc.imsave(OUTPUT_DIR+'attributes.png', canvas)
+      exit()
+
+      '''
       # create random attributes for the rest of the batch
       batch_y = np.random.choice([0, 1], size=(BATCH_SIZE,9))
       batch_y[0][:] = 0
@@ -119,6 +125,6 @@ if __name__ == '__main__':
          batch_y = np.random.choice([0, 1], size=(BATCH_SIZE,9))
          batch_y[0][:] = 0
          batch_y[0][-3] = 1 # make male
-         
+      '''
 
       exit()
