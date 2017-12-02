@@ -44,6 +44,6 @@ root_celeba/
 ```
 
 3. Run the crop script on the downloaded images. `img_align_celeba_cropped/` is an empty folder made by you.
-Then copy the `ops/crop_images.py` file to your `root_celeba/` folder and run'
+Then copy the `ops/crop_images.py` file to your `root_celeba/` folder and run
 
-`python crop_images.py`
+   `python crop_images.py`
