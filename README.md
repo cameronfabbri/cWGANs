@@ -28,12 +28,7 @@ Female attribute while alternating the others
 
 ### Interpolation results
 
-#### On z and y
-These results are obtained by choosing two values for z, (the same) random values for y, then
-interpolating between the two z values. The images on the far left and far right sides are
-the two initial values for z.
-
-### On just z
+#### On just z
 These are interpolating between two different z vectors but using the same y (same attributes).
 ![i1](https://i.imgur.com/Ca6nRZt.png)
 
@@ -41,7 +36,7 @@ These are interpolating between two different z vectors but using the same y (sa
 
 ![i3](https://i.imgur.com/PaDw1RV.png)
 
-### On just y
+#### On just y
 
 This shows interpolation between four faces (four corners) using random attributes for each face,
 and interpolating between the attributes as well.
