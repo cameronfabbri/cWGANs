@@ -46,7 +46,6 @@ if __name__ == '__main__':
    except: pass
 
    # placeholders for data going into the network
-   global_step = tf.Variable(0, name='global_step', trainable=False)
    z           = tf.placeholder(tf.float32, shape=(BATCH_SIZE, 100), name='z')
    y           = tf.placeholder(tf.float32, shape=(BATCH_SIZE, 9), name='y')
 
@@ -79,38 +78,37 @@ if __name__ == '__main__':
 
    #test_len = len(test_annots)
 
-   step = 0
-
-   info_dict = {}
+   male = 1
 
    c = 0
    print 'generating data...'
    while c < MAX_GEN:
       batch_z = np.random.normal(0, 1.0, size=[BATCH_SIZE, 100]).astype(np.float32)
 
-      # first generate an image with no attributes
+      # first generate an image with no attributes except male or female
       batch_y = np.random.choice([0, 1], size=(BATCH_SIZE,9))
       batch_y[0][:] = 0
-      batch_y[0][-3] = 1 # make male
+      batch_y[0][-3] = male # make male or female
       gen_imgs = sess.run([gen_images], feed_dict={z:batch_z, y:batch_y})[0]
 
-      canvas = 255*np.ones(( 80, (9*5)+(9*64)+4, 3 ), dtype=np.uint8)
+      canvas = 255*np.ones((80, 680, 3), dtype=np.uint8)
+      start_x = 10
+      start_y = 10
+      end_y = start_y+64
+
       for img in gen_imgs:
          img = (img+1.)
          img *= 127.5
          img = np.clip(img, 0, 255).astype(np.uint8)
          img = np.reshape(img, (64, 64, -1))
-         #misc.imsave(OUTPUT_DIR+'image_0.png',img)
+         end_x = start_x+64
          canvas[start_y:end_y, start_x:end_x, :] = img
+         break
 
-      misc.imsave(OUTPUT_DIR+'attributes.png', canvas)
-      exit()
-
-      '''
-      # create random attributes for the rest of the batch
+      # bald, bangs, black_hair, blond_hair, eyeglasses, heavy_makeup, male, pale_skin, smiling
       batch_y = np.random.choice([0, 1], size=(BATCH_SIZE,9))
       batch_y[0][:] = 0
-      batch_y[0][-3] = 1 # make male
+      batch_y[0][-3] = male # make male or female
       for i in range(9):
          batch_y[0][i] = 1
          print batch_y[0]
@@ -120,11 +118,16 @@ if __name__ == '__main__':
             img *= 127.5
             img = np.clip(img, 0, 255).astype(np.uint8)
             img = np.reshape(img, (64, 64, -1))
-            misc.imsave(OUTPUT_DIR+'image_'+str(i+1)+'.png',img)
+            break
+         end_x = start_x+64
+         canvas[start_y:end_y, start_x:end_x, :] = img
+         start_x += 64+10
       
          batch_y = np.random.choice([0, 1], size=(BATCH_SIZE,9))
          batch_y[0][:] = 0
-         batch_y[0][-3] = 1 # make male
-      '''
+         batch_y[0][-3] = male # make male or female
+
+      misc.imsave(OUTPUT_DIR+'attributes.png', canvas)
+      exit()
 
       exit()

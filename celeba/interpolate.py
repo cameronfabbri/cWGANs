@@ -71,14 +71,11 @@ if __name__ == '__main__':
    
    #$print 'Loading data...'
    #images, annots, test_images, test_annots = data_ops.load_celeba(DATA_DIR)
-
    #test_images = images
    #test_annots = annots
-
    #test_len = len(test_annots)
 
    step = 0
-
    info_dict = {}
 
    c = 0
