@@ -39,6 +39,9 @@ Same z vector being used, but interpolating along the attribute.
 
 ![b2](https://i.imgur.com/BSRKpd8.png)
 
+##### Male, glasses, smiling, to male, no glasses, not smiling
+![b3](https://i.imgur.com/GCHoFOC.png)
+
 #### On just z
 These are interpolating between two different z vectors but using the same y (same attributes).
 ![i1](https://i.imgur.com/Ca6nRZt.png)
