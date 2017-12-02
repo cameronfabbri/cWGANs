@@ -16,7 +16,7 @@ import requests
 import gzip
 import cPickle as pickle
 import gzip
-#import mnist_reader
+import mnist_reader
 
 '''
    Helper function that returns string names for the attributes
@@ -206,11 +206,13 @@ def load_fashion(data_dir):
       label = np.zeros((10))
       label[l] = 1
       train_labels.append(label)
+      t = normalize(t)
       train_images.append(np.reshape(t, (28, 28, 1)))
    for t,l in zip(X_test, y_test):
       label = np.zeros((10))
       label[l] = 1
       test_labels.append(label)
+      t = normalize(t)
       test_images.append(np.reshape(t, (28, 28, 1)))
 
    return np.asarray(train_images), np.asarray(train_labels), np.asarray(test_images), np.asarray(test_labels)
