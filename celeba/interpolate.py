@@ -1,6 +1,7 @@
 '''
 
-   This interpolates between two generated images
+   This interpolates between two z values. Attributes (y value)
+   stays the same, it is the z value that is interpolated.
 
 '''
 import matplotlib.pyplot as plt
@@ -115,21 +116,15 @@ if __name__ == '__main__':
    latent_vectors = np.asarray(latent_vectors)
 
    gen_imgs = sess.run([gen_images], feed_dict={z:latent_vectors, y:latent_y})[0]
-   i = 0
-   canvas = 255*np.ones((80, 64*(NUM+2), 3), dtype=np.uint8)
-
-   start_x = 10
-   start_y = 10
-   end_y = start_y+64
+   canvas   = 255*np.ones((80, 64*(NUM+2), 3), dtype=np.uint8)
+   start_x  = 10
+   start_y  = 10
+   end_y    = start_y+64
 
    for img in gen_imgs:
-      
       img = (img+1.)/2. # these two lines properly scale from [-1, 1] to [0, 255]
       img *= 255.0/img.max()
       end_x = start_x+64
-
       canvas[start_y:end_y, start_x:end_x, :] = img
-      
       start_x += 64+10
-
-   misc.imsave(OUTPUT_DIR+'canvas.png', canvas)
+   misc.imsave(OUTPUT_DIR+'interpolate.png', canvas)

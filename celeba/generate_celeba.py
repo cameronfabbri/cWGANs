@@ -69,15 +69,8 @@ if __name__ == '__main__':
          print "Could not restore model"
          raise
          exit()
-   
-   #$print 'Loading data...'
-   #images, annots, test_images, test_annots = data_ops.load_celeba(DATA_DIR)
 
-   #test_images = images
-   #test_annots = annots
-
-   #test_len = len(test_annots)
-
+   # flag for male or female
    male = 1
 
    c = 0
@@ -128,6 +121,4 @@ if __name__ == '__main__':
          batch_y[0][-3] = male # make male or female
 
       misc.imsave(OUTPUT_DIR+'attributes.png', canvas)
-      exit()
-
       exit()
