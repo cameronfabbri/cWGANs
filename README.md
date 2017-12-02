@@ -32,6 +32,7 @@ Female attribute while alternating the others
 Same z vector being used, but interpolating along the attribute.
 
 Bald to not bald
+
 ![b1](https://i.imgur.com/ra1nHXd.png)
 
 #### On just z
