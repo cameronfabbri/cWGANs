@@ -152,4 +152,4 @@ if __name__ == '__main__':
       start_y += 28+5 # new row
 
 
-   plt.imsave(OUTPUT_DIR+'interpolate.png', np.squeeze(canvas), cmap=cm.gray)
+   plt.imsave(OUTPUT_DIR+'grid.png', np.squeeze(canvas), cmap=cm.gray)
