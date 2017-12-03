@@ -108,18 +108,21 @@ if __name__ == '__main__':
    y3 = np.zeros((9))
    y4 = np.zeros((9))
 
-   y1 = np.random.choice([0, 1], size=(9))
-   y2 = np.random.choice([0, 1], size=(9))
-   y3 = np.random.choice([0, 1], size=(9))
-   y4 = np.random.choice([0, 1], size=(9))
-   '''
+   #y1 = np.random.choice([0, 1], size=(9))
+   #y2 = np.random.choice([0, 1], size=(9))
+   #y3 = np.random.choice([0, 1], size=(9))
+   #y4 = np.random.choice([0, 1], size=(9))
+   #'''
    y1[-3] = 1
    y1[-1] = 1
+   
    y2[-3] = 1
    y2[1] = 1
+   
    y3[5] = 1
+   
    y4[3] = 1
-   '''
+   #'''
    
    # four corners
    z1 = f_z[0]
