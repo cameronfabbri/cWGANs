@@ -103,6 +103,7 @@ if __name__ == '__main__':
    # the four z vectors to interpolate between
    f_z = np.random.normal(-1.0, 1.0, size=[4, 100]).astype(np.float32)
 
+   # bald, bangs, black_hair, blond_hair, eyeglasses, heavy_makeup, male, pale_skin, smiling
    y1 = np.zeros((9))
    y2 = np.zeros((9))
    y3 = np.zeros((9))
@@ -115,13 +116,15 @@ if __name__ == '__main__':
    #'''
    y1[-3] = 1
    y1[-1] = 1
+   y1[2] = 1
    
-   y2[-3] = 1
    y2[1] = 1
+   y2[-1] = 1
    
    y3[5] = 1
    
    y4[3] = 1
+   y4[-3] = 1
    #'''
    
    # four corners
