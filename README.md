@@ -1,6 +1,7 @@
 # Conditional Wasserstein GANs
 
-This is an implementation of conditional GANS using the Improved Wasserstein (WGAN-GP) method.
+This is an implementation of [conditional](https://arxiv.org/pdf/1411.1784.pdf) [GANs](https://arxiv.org/pdf/1406.2661.pdf)
+using the [Improved Wasserstein (WGAN-GP)](https://arxiv.org/pdf/1704.00028.pdf) method.
 Currently I'm trying it out on multiple datasets, though Celeba has been the main target.
 
 ### Results
