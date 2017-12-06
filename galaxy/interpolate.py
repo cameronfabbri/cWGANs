@@ -1,6 +1,7 @@
 '''
 
-   This file generates celeba latent z vectors and the corresponding images such that the encoder can be trained
+   This interpolates between two z values. Attributes (y value)
+   stays the same, it is the z value that is interpolated.
 
 '''
 import matplotlib.pyplot as plt
@@ -30,30 +31,27 @@ if __name__ == '__main__':
 
    parser = argparse.ArgumentParser()
    parser.add_argument('--CHECKPOINT_DIR', required=True,help='checkpoint directory',type=str)
-   parser.add_argument('--DATASET',        required=False,help='The DATASET to use',      type=str,default='galaxy')
    parser.add_argument('--OUTPUT_DIR',     required=False,help='Directory to save data', type=str,default='./')
-   parser.add_argument('--MAX_GEN',        required=False,help='Maximum images to generate',  type=int,default=5)
-   parser.add_argument('--DATA_DIR',       required=True,help='Data directory',type=str)
+   parser.add_argument('--DATA_DIR',       required=True,help='Directory with data', type=str,default='./')
+   parser.add_argument('--NUM',            required=False,help='Maximum images to interpolate',  type=int,default=9)
    a = parser.parse_args()
 
    CHECKPOINT_DIR = a.CHECKPOINT_DIR
-   DATASET        = a.DATASET
    OUTPUT_DIR     = a.OUTPUT_DIR
-   MAX_GEN        = a.MAX_GEN
    DATA_DIR       = a.DATA_DIR
-
-   BATCH_SIZE = 64
+   NUM            = a.NUM
+   BATCH_SIZE     = NUM
 
    try: os.makedirs(OUTPUT_DIR)
    except: pass
 
    # placeholders for data going into the network
+   global_step = tf.Variable(0, name='global_step', trainable=False)
    z           = tf.placeholder(tf.float32, shape=(BATCH_SIZE, 100), name='z')
    y           = tf.placeholder(tf.float32, shape=(BATCH_SIZE, 14), name='y')
 
    # generated images
    gen_images = netG(z, y, BATCH_SIZE)
-   D_score = netD(gen_images, y, BATCH_SIZE, 'wgan')
    
    saver = tf.train.Saver(max_to_keep=1)
    init = tf.group(tf.global_variables_initializer(), tf.local_variables_initializer())
@@ -71,56 +69,40 @@ if __name__ == '__main__':
          print "Could not restore model"
          raise
          exit()
-
+   
    print 'Loading data...'
    images, annots, test_images, test_annots, _ = data_ops.load_galaxy(DATA_DIR)
    test_len = len(test_annots)
 
    print 'generating data...'
-   batch_z = np.random.normal(0, 1.0, size=[BATCH_SIZE, 100]).astype(np.float32)
    idx     = np.random.choice(np.arange(test_len), BATCH_SIZE, replace=False)
    batch_y = test_annots[idx]
+   batch_y[1] = batch_y[0] # gotta make sure they have the same attributes
 
-   gen_imgs = sess.run([gen_images], feed_dict={z:batch_z, y:batch_y})[0]
+   # the two z vectors to interpolate between
+   two_z = np.random.normal(0, 1.0, size=[2, 100]).astype(np.float32)
 
-   canvas = 255*np.ones((80, 680, 3), dtype=np.uint8)
-   start_x = 10
-   start_y = 10
-   end_y = start_y+64
+   alpha = np.linspace(0,1, num=NUM)
+   latent_vectors = []
+   x1 = two_z[0]
+   x2 = two_z[1]
+
+   for a in alpha:
+      vector = x1*(1-a) + x2*a
+      latent_vectors.append(vector)
+
+   latent_vectors = np.asarray(latent_vectors)
+
+   gen_imgs = sess.run([gen_images], feed_dict={z:latent_vectors, y:batch_y})[0]
+   canvas   = 255*np.ones((80, 64*(NUM+2), 3), dtype=np.uint8)
+   start_x  = 10
+   start_y  = 10
+   end_y    = start_y+64
 
    for img in gen_imgs:
-      img = (img+1.)
-      img *= 127.5
-      img = np.clip(img, 0, 255).astype(np.uint8)
-      img = np.reshape(img, (64, 64, -1))
-      end_x = start_x+64
-      canvas[start_y:end_y, start_x:end_x, :] = img
-      break
-
-   print batch_y[0]
-   misc.imsave(OUTPUT_DIR+'attributes.png', canvas)
-   # batch y should be chosen from the test set
-   exit()
-   batch_y = np.random.choice([0, 1], size=(BATCH_SIZE,9))
-   batch_y[0][:] = 0
-   batch_y[0][-3] = male # make male or female
-   for i in range(14):
-      batch_y[0][i] = 1
-      print batch_y[0]
-      gen_imgs = sess.run([gen_images], feed_dict={z:batch_z, y:batch_y})[0]
-      for img in gen_imgs:
-         img = (img+1.)
-         img *= 127.5
-         img = np.clip(img, 0, 255).astype(np.uint8)
-         img = np.reshape(img, (64, 64, -1))
-         break
+      img = (img+1.)/2. # these two lines properly scale from [-1, 1] to [0, 255]
+      img *= 255.0/img.max()
       end_x = start_x+64
       canvas[start_y:end_y, start_x:end_x, :] = img
       start_x += 64+10
-   
-      batch_y = np.random.choice([0, 1], size=(BATCH_SIZE,9))
-      batch_y[0][:] = 0
-      batch_y[0][-3] = male # make male or female
-
-   misc.imsave(OUTPUT_DIR+'attributes.png', canvas)
-   exit()
+   misc.imsave(OUTPUT_DIR+'interpolate.png', canvas)

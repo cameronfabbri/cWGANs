@@ -97,7 +97,8 @@ def get_attr_name(attr):
 '''
 def load_galaxy(data_dir):
 
-   idx = np.array([0, 1, 7, 10, 13, 16, 19, 22, 25, 28, 31, 34, 40, 49])
+   #idx = np.array([0, 1, 7, 10, 13, 16, 19, 22, 25, 28, 31, 34, 40, 49])
+   idx = np.array([7, 10, 31, 49])
 
    train_images     = glob.glob(data_dir+'images/train/*.png')
    test_images      = glob.glob(data_dir+'images/test/*.png')

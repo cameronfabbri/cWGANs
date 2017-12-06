@@ -15,11 +15,11 @@ def netG(z, y, BATCH_SIZE):
    z = tf.reshape(z, [BATCH_SIZE, 4, 4, 512])
    #z = tf.nn.relu(z)
 
-   conv1 = tcl.convolution2d_transpose(z, 256, 5, 2, normalizer_fn=tcl.batch_norm, activation_fn=tf.nn.relu, weights_initializer=tf.random_normal_initializer(stddev=0.02), scope='g_conv1')
+   conv1 = tcl.convolution2d_transpose(z, 512, 5, 2, normalizer_fn=tcl.batch_norm, activation_fn=tf.nn.relu, weights_initializer=tf.random_normal_initializer(stddev=0.02), scope='g_conv1')
    
-   conv2 = tcl.convolution2d_transpose(conv1, 128, 5, 2, normalizer_fn=tcl.batch_norm, activation_fn=tf.nn.relu, weights_initializer=tf.random_normal_initializer(stddev=0.02), scope='g_conv2')
+   conv2 = tcl.convolution2d_transpose(conv1, 256, 5, 2, normalizer_fn=tcl.batch_norm, activation_fn=tf.nn.relu, weights_initializer=tf.random_normal_initializer(stddev=0.02), scope='g_conv2')
    
-   conv3 = tcl.convolution2d_transpose(conv2, 64, 5, 2, normalizer_fn=tcl.batch_norm, activation_fn=tf.nn.relu, weights_initializer=tf.random_normal_initializer(stddev=0.02), scope='g_conv3')
+   conv3 = tcl.convolution2d_transpose(conv2, 128, 5, 2, normalizer_fn=tcl.batch_norm, activation_fn=tf.nn.relu, weights_initializer=tf.random_normal_initializer(stddev=0.02), scope='g_conv3')
    
    conv4 = tcl.convolution2d_transpose(conv3, 3, 5, 2, activation_fn=tf.nn.tanh, weights_initializer=tf.random_normal_initializer(stddev=0.02), scope='g_conv4')
 
@@ -113,10 +113,13 @@ def encZ(x, ACTIVATION):
 
    fc1 = tcl.fully_connected(conv4_flat, 4096, activation_fn=tf.identity, normalizer_fn=tcl.batch_norm, weights_initializer=tf.random_normal_initializer(stddev=0.02), scope='fc1')
    fc1 = activate(fc1, ACTIVATION)
-   #fc1 = tcl.dropout(fc1, 0.5)
+   fc1 = tcl.dropout(fc1, 0.5)
    
    fc2 = tcl.fully_connected(fc1, 100, activation_fn=tf.identity, weights_initializer=tf.random_normal_initializer(stddev=0.02), scope='fc2')
    
+   # relu to match the [0,1] range from the distribution
+   fc2 = relu(fc2)
+
    print 'input:',x
    print 'conv1:',conv1
    print 'conv2:',conv2
