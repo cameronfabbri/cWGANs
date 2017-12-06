@@ -1,7 +1,5 @@
 '''
-
    This file generates celeba latent z vectors and the corresponding images such that the encoder can be trained
-
 '''
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import cm
@@ -31,14 +29,16 @@ if __name__ == '__main__':
    parser = argparse.ArgumentParser()
    parser.add_argument('--CHECKPOINT_DIR', required=True,help='checkpoint directory',type=str)
    parser.add_argument('--DATASET',        required=False,help='The DATASET to use',      type=str,default='celeba')
+   parser.add_argument('--DATA_DIR',       required=False,help='Directory where data is', type=str,default='./')
    parser.add_argument('--OUTPUT_DIR',     required=False,help='Directory to save data', type=str,default='./')
-   parser.add_argument('--MAX_GEN',        required=False,help='Maximum images to generate',  type=int,default=5)
+   parser.add_argument('--MAX_GEN',        required=False,help='Maximum training steps',  type=int,default=100000)
    a = parser.parse_args()
 
    CHECKPOINT_DIR = a.CHECKPOINT_DIR
    DATASET        = a.DATASET
    OUTPUT_DIR     = a.OUTPUT_DIR
    MAX_GEN        = a.MAX_GEN
+   DATA_DIR       = a.DATA_DIR
 
    BATCH_SIZE = 64
 
@@ -46,6 +46,7 @@ if __name__ == '__main__':
    except: pass
 
    # placeholders for data going into the network
+   global_step = tf.Variable(0, name='global_step', trainable=False)
    z           = tf.placeholder(tf.float32, shape=(BATCH_SIZE, 100), name='z')
    y           = tf.placeholder(tf.float32, shape=(BATCH_SIZE, 14), name='y')
 
@@ -69,57 +70,50 @@ if __name__ == '__main__':
          print "Could not restore model"
          raise
          exit()
+   
+   print 'Loading data...'
+   images, annots, test_images, test_annots, _ = data_ops.load_galaxy(DATA_DIR)
 
-   # flag for male or female
-   male = 1
+   test_images = images
+   test_annots = annots
+
+   test_len = len(test_annots)
+
+   step = 0
+
+   '''
+      Save the image to a folder
+      write to a pickle file {image_name:label}
+   '''
+   info_dict = {}
 
    c = 0
+   r = 0
    print 'generating data...'
+   #for step in tqdm(range(int(MAX_GEN/BATCH_SIZE))):
    while c < MAX_GEN:
+      idx     = np.random.choice(np.arange(test_len), BATCH_SIZE, replace=False)
       batch_z = np.random.normal(0, 1.0, size=[BATCH_SIZE, 100]).astype(np.float32)
+      batch_y = test_annots[idx]
 
-      # first generate an image with no attributes except male or female
-      batch_y = np.random.choice([0, 1], size=(BATCH_SIZE,9))
-      batch_y[0][:] = 0
-      batch_y[0][-3] = male # make male or female
       gen_imgs = sess.run([gen_images], feed_dict={z:batch_z, y:batch_y})[0]
+      # get score from the discriminator
+      dscores = sess.run([D_score], feed_dict={z:batch_z, y:batch_y})[0]
 
-      canvas = 255*np.ones((80, 680, 3), dtype=np.uint8)
-      start_x = 10
-      start_y = 10
-      end_y = start_y+64
+      for im,y_,z_,score in zip(gen_imgs,batch_y,batch_z,dscores):
+         s = np.mean(score)
+         if s > -4.0:
+            image_name = OUTPUT_DIR+'img_'+str(c)+'.png'
+            info_dict[image_name] = [y_, z_]
+            misc.imsave(image_name, im)
+            c += 1
+         #else:
+         #   misc.imsave('rejects/reject_'+str(r)+'.png', im)
+         #   r += 1
 
-      for img in gen_imgs:
-         img = (img+1.)
-         img *= 127.5
-         img = np.clip(img, 0, 255).astype(np.uint8)
-         img = np.reshape(img, (64, 64, -1))
-         end_x = start_x+64
-         canvas[start_y:end_y, start_x:end_x, :] = img
-         break
-
-      # batch y should be chosen from the test set
-      exit()
-      batch_y = np.random.choice([0, 1], size=(BATCH_SIZE,9))
-      batch_y[0][:] = 0
-      batch_y[0][-3] = male # make male or female
-      for i in range(14):
-         batch_y[0][i] = 1
-         print batch_y[0]
-         gen_imgs = sess.run([gen_images], feed_dict={z:batch_z, y:batch_y})[0]
-         for img in gen_imgs:
-            img = (img+1.)
-            img *= 127.5
-            img = np.clip(img, 0, 255).astype(np.uint8)
-            img = np.reshape(img, (64, 64, -1))
-            break
-         end_x = start_x+64
-         canvas[start_y:end_y, start_x:end_x, :] = img
-         start_x += 64+10
-      
-         batch_y = np.random.choice([0, 1], size=(BATCH_SIZE,9))
-         batch_y[0][:] = 0
-         batch_y[0][-3] = male # make male or female
-
-      misc.imsave(OUTPUT_DIR+'attributes.png', canvas)
-      exit()
+   # write out dictionary to pickle file
+   p = open(OUTPUT_DIR+'data.pkl', 'wb')
+   data = pickle.dumps(info_dict)
+   p.write(data)
+   p.close()
+   exit()
