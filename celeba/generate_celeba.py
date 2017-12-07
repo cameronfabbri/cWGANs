@@ -104,6 +104,7 @@ if __name__ == '__main__':
       batch_y[0][-3] = male # make male or female
       for i in range(9):
          batch_y[0][i] = 1
+         if male == 1 and i == 6: batch_y[0][i] = 0
          print batch_y[0]
          gen_imgs = sess.run([gen_images], feed_dict={z:batch_z, y:batch_y})[0]
          for img in gen_imgs:
