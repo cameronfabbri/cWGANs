@@ -48,7 +48,7 @@ if __name__ == '__main__':
    # placeholders for data going into the network
    global_step = tf.Variable(0, name='global_step', trainable=False)
    z           = tf.placeholder(tf.float32, shape=(BATCH_SIZE, 100), name='z')
-   y           = tf.placeholder(tf.float32, shape=(BATCH_SIZE, 14), name='y')
+   y           = tf.placeholder(tf.float32, shape=(BATCH_SIZE, 4), name='y')
 
    # generated images
    gen_images = netG(z, y, BATCH_SIZE)
@@ -84,8 +84,8 @@ if __name__ == '__main__':
 
    batch_y[0] = batch_y[1]
 
-   batch_y[0][-4] = 0
-   batch_y[1][-4] = 1
+   batch_y[0][3] = 0
+   batch_y[1][3] = 1
    print batch_y[0]
    print
    print batch_y[1]
