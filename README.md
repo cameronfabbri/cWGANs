@@ -59,6 +59,24 @@ and interpolating between the attributes as well.
 
 ![i4](https://i.imgur.com/q13bJL3.png)
 
+### EFIGI Galaxy Dataset
+I also ran this on the [EFIGI dataset](https://www.astromatic.net/projects/efigi), which is a dataset of images of galaxies
+with attributes. The attribute I consider in this case are continuous. Due to the nature of the data, it is easier to visualize
+via interpolation.
+
+Arm Strength
+![ga1](https://i.imgur.com/6CpH7F9.png)
+
+Arm Curvature
+![ga2](https://i.imgur.com/oqg1B1z.png)
+
+Visible Dust
+![ga3](https://i.imgur.com/6YXpYAT.png)
+
+Neighboring Galaxy Abundance
+![ga4](https://i.imgur.com/3XoDuvQ.png)
+
+
 
 ### How to run
 1. Download the cropped and aligned celebA dataset from [here](http://mmlab.ie.cuhk.edu.hk/projects/CelebA.html)
