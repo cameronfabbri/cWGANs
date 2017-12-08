@@ -65,15 +65,22 @@ with attributes. The attribute I consider in this case are continuous. Due to th
 via interpolation.
 
 Arm Strength
+
 ![ga1](https://i.imgur.com/6CpH7F9.png)
 
+
 Arm Curvature
+
 ![ga2](https://i.imgur.com/oqg1B1z.png)
 
+
 Visible Dust
+
 ![ga3](https://i.imgur.com/6YXpYAT.png)
 
+
 Neighboring Galaxy Abundance
+
 ![ga4](https://i.imgur.com/3XoDuvQ.png)
 
 
