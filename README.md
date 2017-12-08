@@ -51,16 +51,20 @@ Female attribute while alternating the others
 #### On just y
 Same z vector being used, but interpolating along the attribute.
 
-##### Bald to not bald
+##### Bald &rarr; not bald
 
 ![b1](https://i.imgur.com/ra1nHXd.png)
 
-##### Female to male
+##### Female &rarr; male
 
 ![b2](https://i.imgur.com/BSRKpd8.png)
 
-##### Male, glasses, smiling, to male, no glasses, not smiling
+##### Male, glasses, smiling, &rarr; male, no glasses, not smiling
 ![b3](https://i.imgur.com/GCHoFOC.png)
+
+
+#### Male, glasses, smiling, bangs &rarr; no glasses, not smiling, pale skin, no bangs
+![b4](https://i.imgur.com/cVlZnE3.png)
 
 #### On just z
 These are interpolating between two different z vectors but using the same y (same attributes).
