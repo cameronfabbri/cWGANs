@@ -64,8 +64,10 @@ and interpolating between the attributes as well.
 
 ### EFIGI Galaxy Dataset
 I also ran this on the [EFIGI dataset](https://www.astromatic.net/projects/efigi), which is a dataset of images of galaxies
-with attributes. The attribute I consider in this case are continuous. Due to the nature of the data, it is easier to visualize
-via interpolation.
+with attributes. The attributes I consider in this case are continuous. There are about 40 attributes, but for simplicity I only
+consider four of them. 
+
+Due to the nature of the data, it is easier to visualize via interpolation.
 
 Arm Strength: More &rarr; Less
 
