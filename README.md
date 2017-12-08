@@ -67,7 +67,7 @@ I also ran this on the [EFIGI dataset](https://www.astromatic.net/projects/efigi
 with attributes. The attribute I consider in this case are continuous. Due to the nature of the data, it is easier to visualize
 via interpolation.
 
-Arm Strength
+Arm Strength: More &rarr; Less
 
 ![ga1](https://i.imgur.com/6CpH7F9.png)
 
