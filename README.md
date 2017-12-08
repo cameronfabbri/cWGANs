@@ -72,17 +72,17 @@ Arm Strength: More &rarr; Less
 ![ga1](https://i.imgur.com/6CpH7F9.png)
 
 
-Arm Curvature
+Arm Curvature: More &rarr; Less
 
 ![ga2](https://i.imgur.com/oqg1B1z.png)
 
 
-Visible Dust
+Visible Dust: More &rarr; Less
 
 ![ga3](https://i.imgur.com/6YXpYAT.png)
 
 
-Neighboring Galaxy Abundance
+Neighboring Galaxy Abundance: More &rarr; Less
 
 ![ga4](https://i.imgur.com/3XoDuvQ.png)
 
