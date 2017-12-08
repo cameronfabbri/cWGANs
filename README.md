@@ -125,3 +125,7 @@ root_celeba/
 Then copy the `ops/crop_images.py` file to your `root_celeba/` folder and run
 
    `python crop_images.py`
+
+
+## TODO
+Everything is in different folders. Ideally, I'd like to have just one.
