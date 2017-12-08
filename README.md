@@ -67,7 +67,7 @@ I also ran this on the [EFIGI dataset](https://www.astromatic.net/projects/efigi
 with attributes. The attributes I consider in this case are continuous. There are about 40 attributes, but for simplicity I only
 consider four of them. 
 
-Due to the nature of the data, it is easier to visualize via interpolation.
+Due to the nature of the data, it is easier to visualize via interpolation along y.
 
 Arm Strength: More &rarr; Less
 
