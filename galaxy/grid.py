@@ -54,11 +54,13 @@ if __name__ == '__main__':
    parser = argparse.ArgumentParser()
    parser.add_argument('--CHECKPOINT_DIR', required=True,help='checkpoint directory',type=str)
    parser.add_argument('--OUTPUT_DIR',     required=False,help='Directory to save data', type=str,default='./')
+   parser.add_argument('--DATA_DIR',     required=False,help='Directory where data is', type=str,default='./')
    parser.add_argument('--NUM',            required=False,help='Maximum images to interpolate',  type=int,default=9)
    a = parser.parse_args()
 
    CHECKPOINT_DIR = a.CHECKPOINT_DIR
    OUTPUT_DIR     = a.OUTPUT_DIR
+   DATA_DIR       = a.DATA_DIR
    NUM            = a.NUM
 
    BATCH_SIZE = NUM
@@ -69,7 +71,7 @@ if __name__ == '__main__':
    # placeholders for data going into the network
    global_step = tf.Variable(0, name='global_step', trainable=False)
    z           = tf.placeholder(tf.float32, shape=(BATCH_SIZE, 100), name='z')
-   y           = tf.placeholder(tf.float32, shape=(BATCH_SIZE, 9), name='y')
+   y           = tf.placeholder(tf.float32, shape=(BATCH_SIZE, 4), name='y')
 
    # generated images
    gen_images = netG(z, y, BATCH_SIZE)
@@ -91,42 +93,24 @@ if __name__ == '__main__':
          raise
          exit()
    
-   step = 0
+   print 'Loading data...'
+   images, annots, test_images, test_annots, _ = data_ops.load_galaxy(DATA_DIR)
+   test_len = len(test_annots)
 
-   c = 0
    print 'generating data...'
-   batch_z = np.random.normal(-1.0, 1.0, size=[BATCH_SIZE, 100]).astype(np.float32)
+   idx     = np.random.choice(np.arange(test_len), BATCH_SIZE, replace=False)
+   batch_y = test_annots[idx]
+   # the four z vectors to interpolate between
+   f_z = np.random.normal(-1.0, 1.0, size=[4, 100]).astype(np.float32)
 
    # contains rows of images
    gen_imgs = []
 
-   # the four z vectors to interpolate between
-   f_z = np.random.normal(-1.0, 1.0, size=[4, 100]).astype(np.float32)
+   y1 = batch_y[0]
+   y2 = batch_y[1]
+   y3 = batch_y[2]
+   y4 = batch_y[3]
 
-   # bald, bangs, black_hair, blond_hair, eyeglasses, heavy_makeup, male, pale_skin, smiling
-   y1 = np.zeros((9))
-   y2 = np.zeros((9))
-   y3 = np.zeros((9))
-   y4 = np.zeros((9))
-
-   #y1 = np.random.choice([0, 1], size=(9))
-   #y2 = np.random.choice([0, 1], size=(9))
-   #y3 = np.random.choice([0, 1], size=(9))
-   #y4 = np.random.choice([0, 1], size=(9))
-   #'''
-   y1[-3] = 1
-   y1[-1] = 1
-   y1[2] = 1
-   
-   y2[1] = 1
-   y2[-1] = 1
-   
-   y3[5] = 1
-   
-   y4[3] = 1
-   y4[-3] = 1
-   #'''
-   
    # four corners
    z1 = f_z[0]
    z2 = f_z[1]

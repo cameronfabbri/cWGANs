@@ -143,6 +143,53 @@ def load_galaxy(data_dir):
 
    return train_images, train_attributes, test_images, test_attributes, paths
 
+'''
+   Galaxy zoo dataset. Just going to load it all in memory
+'''
+def load_zoo(data_dir):
+
+   train_images = sorted(glob.glob(data_dir+'images_training_rev1/train/*.jpg'))
+   train_ids    = [ntpath.basename(x.split('.')[0]) for x in train_images]
+   
+   test_images = sorted(glob.glob(data_dir+'images_training_rev1/test/*.jpg'))
+   test_ids    = [ntpath.basename(x.split('.')[0]) for x in test_images]
+
+   # put ids with image path just to be sure we get the correct image. Slow but oh well
+   id_dict = {}
+   for img, id_ in zip(train_images, train_ids):
+      id_dict[int(id_)] = img
+   for img, id_ in zip(test_images, test_ids):
+      id_dict[int(id_)] = img
+
+   train_images     = []
+   train_attributes = []
+
+   test_images     = []
+   test_attributes = []
+
+   d = 0
+   with open(data_dir+'training_solutions_rev1.csv', 'r') as f:
+      for line in f:
+         if d == 0:
+            d = 1
+            continue
+         line = np.asarray(line.split(',')).astype('float32')
+         im_id = int(line[0])
+         img = misc.imread(id_dict[im_id]).astype('float32')
+         img = misc.imresize(img, (64,64))
+         img = normalize(img)
+         att = line[1:]
+
+         # remember train_ids is all str
+         if str(im_id) in train_ids:
+            train_images.append(img)
+            train_attributes.append(att)
+         else:
+            test_images.append(img)
+            test_attributes.append(att)
+
+   return np.asarray(train_images), np.asarray(train_attributes), np.asarray(test_images), np.asarray(test_attributes)
+
 def load_mnist(data_dir, mode='train'):
 
    url = 'http://deeplearning.net/data/mnist/mnist.pkl.gz'
