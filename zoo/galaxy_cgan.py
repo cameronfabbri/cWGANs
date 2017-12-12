@@ -223,9 +223,9 @@ if __name__ == '__main__':
             img *= 127.5
             img = np.clip(img, 0, 255).astype(np.uint8)
             img = np.reshape(img, (64, 64, -1))
-            misc.imsave(IMAGES_DIR+'step_'+str(step)+'_num_'+str(num)+'.png', img)
+            misc.imsave(IMAGES_DIR+'step_'+str(step)+'_'+str(idx[num])+'.png', img)
             with open(IMAGES_DIR+'attrs.txt', 'a') as f:
-               f.write('step_'+str(step)+'_num_'+str(num)+','+str(atr)+'\n')
+               f.write('step_'+str(step)+'_'+str(idx[num])+','+str(atr)+'\n')
             num += 1
             if num == 5: break
    saver.save(sess, CHECKPOINT_DIR+'checkpoint-'+str(step))
