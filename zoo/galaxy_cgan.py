@@ -43,9 +43,8 @@ if __name__ == '__main__':
    CHECKPOINT_DIR = 'checkpoints/gan/DATASET_'+DATASET+'/LOSS_'+LOSS+'/DIST_'+str(DIST)+'/MATCH_'+str(MATCH)+'/'
    IMAGES_DIR     = CHECKPOINT_DIR+'images/'
 
-
    print 'Loading data...'
-   train_images, train_annots, test_images, test_annots = data_ops.load_zoo(DATA_DIR)
+   train_images, train_annots, train_ids, test_images, test_annots, test_ids = data_ops.load_zoo(DATA_DIR)
    print train_images.shape
    print train_annots.shape
    print test_images.shape
@@ -215,6 +214,7 @@ if __name__ == '__main__':
          batch_z      = np.random.normal(-1.0, 1.0, size=[BATCH_SIZE, 100]).astype(np.float32)
          batch_y      = test_annots[idx]
          batch_images = test_images[idx]
+         batch_ids    = test_ids[idx]
          gen_imgs = np.squeeze(np.asarray(sess.run([gen_images], feed_dict={z:batch_z, y:batch_y, real_images:batch_images})))
 
          num = 0
@@ -223,9 +223,9 @@ if __name__ == '__main__':
             img *= 127.5
             img = np.clip(img, 0, 255).astype(np.uint8)
             img = np.reshape(img, (64, 64, -1))
-            misc.imsave(IMAGES_DIR+'step_'+str(step)+'_'+str(idx[num])+'.png', img)
+            misc.imsave(IMAGES_DIR+'step_'+str(step)+'_'+str(batch_ids[num])+'.png', img)
             with open(IMAGES_DIR+'attrs.txt', 'a') as f:
-               f.write('step_'+str(step)+'_'+str(idx[num])+','+str(atr)+'\n')
+               f.write('step_'+str(step)+'_'+str(batch_ids[num])+','+str(atr)+'\n')
             num += 1
             if num == 5: break
    saver.save(sess, CHECKPOINT_DIR+'checkpoint-'+str(step))
